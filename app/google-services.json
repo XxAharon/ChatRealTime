@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "256791130864",
+    "firebase_url": "https://chatrealtime-6d080-default-rtdb.firebaseio.com",
+    "project_id": "chatrealtime-6d080",
+    "storage_bucket": "chatrealtime-6d080.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256791130864:android:3f5e5b8e4ccaf67a9bc835",
+        "android_client_info": {
+          "package_name": "com.example.chatrealtime"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256791130864-di2nl2vv7hmjcond4aifgcpeecqhdipk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzDqaoJcWrhVF529y4CAfzRuvDDHjqDnI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256791130864-di2nl2vv7hmjcond4aifgcpeecqhdipk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

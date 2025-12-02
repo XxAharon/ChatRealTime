@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -34,6 +35,13 @@ android {
 }
 
 dependencies {
+    // Implementacion de boom para compatibilidad de versiones
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    // Dependencia de RealTimeDatabase
+    implementation("com.google.firebase:firebase-database")
+    // Dependencia de Auth
+    implementation("com.google.firebase:firebase-auth")
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
