@@ -39,6 +39,7 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         btnGoogleLogin = view.findViewById(R.id.btnGoogleLogin);
+        Toast.makeText(getContext(), "Vienvenido", Toast.LENGTH_SHORT).show();
 
         GoogleSignInOptions config = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -83,9 +84,9 @@ public class LoginFragment extends Fragment {
     }
 
     private void navegarAlChat() {
-        ChatFragment chatFragment = new ChatFragment();
+        ListaContactosFragment listaContactosFragment = new ListaContactosFragment();
         getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main, chatFragment)
+                .replace(R.id.main, listaContactosFragment)
                 .commit();
     }
 }

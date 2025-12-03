@@ -43,6 +43,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth")
 
+    // Dependencias de MQTT
+    implementation("com.github.hannesa2:paho.mqtt.android:3.3.5")
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
