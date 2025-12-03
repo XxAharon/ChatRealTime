@@ -39,7 +39,7 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         btnGoogleLogin = view.findViewById(R.id.btnGoogleLogin);
-        Toast.makeText(getContext(), "Vienvenido", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Bienvenido", Toast.LENGTH_SHORT).show();
 
         GoogleSignInOptions config = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))

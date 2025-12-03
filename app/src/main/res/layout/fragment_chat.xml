@@ -8,7 +8,7 @@
     android:background="#F5F5F5" >
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycleViewMensajes"
+        android:id="@+id/recycleViewChat"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="8dp"

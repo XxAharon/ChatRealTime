@@ -53,31 +53,31 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        listaMensajes = new ArrayList<>();
+
         if (getArguments() != null) {
             uidDestino = getArguments().getString("uid_destino");
             nombreDestino = getArguments().getString("nombre_destino");
         }
 
         miUid = FirebaseManager.getInstance().getCurrentUser().getUid();
+        adapter = new MensajeAdapter(listaMensajes, miUid);
 
+        // Generamos el canal único
         if (miUid.compareTo(uidDestino) < 0) {
             TOPIC_CHAT = "chat/" + miUid + "_" + uidDestino;
         } else {
             TOPIC_CHAT = "chat/" + uidDestino + "_" + miUid;
         }
 
-        rvMensajes = view.findViewById(R.id.recycleViewMensajes);
+        rvMensajes = view.findViewById(R.id.recycleViewChat);
         etMensaje = view.findViewById(R.id.etMensaje);
         btnEnviar = view.findViewById(R.id.btnEnviar);
-
-        listaMensajes = new ArrayList<>();
-
-        adapter = new MensajeAdapter(listaMensajes, miUid);
+        rvMensajes.setAdapter(adapter);
 
         LinearLayoutManager lm = new LinearLayoutManager(getContext());
-        lm.setStackFromEnd(true);
+        lm.setStackFromEnd(true); // Los mensajes nuevos aparecen abajo
         rvMensajes.setLayoutManager(lm);
-        rvMensajes.setAdapter(adapter);
 
         configurarMQTT();
 
@@ -86,18 +86,18 @@ public class ChatFragment extends Fragment {
 
     private void configurarMQTT() {
         MqttManager mqtt = MqttManager.getInstance();
-
-        // Aseguramos conexión
         mqtt.conectar(requireContext());
 
-        // Nos suscribimos al canal
         mqtt.suscribirse(TOPIC_CHAT, new MqttManager.MensajeListener() {
             @Override
             public void onMensajeRecibido(String mensajeJson) {
-                // ... (Tu código actual) ...
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() ->
+                            procesarMensajeRecibido(mensajeJson)
+                    );
+                }
             }
 
-            // AGREGA ESTO:
             @Override
             public void onError(String mensajeError) {
                 if (getActivity() != null) {
@@ -116,16 +116,18 @@ public class ChatFragment extends Fragment {
         String hora = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 
         try {
-            // Creamos un JSON para enviar todo junto
             JSONObject json = new JSONObject();
             json.put("contenido", texto);
-            json.put("senderId", miUid); // Importante para saber quién lo envió
+            json.put("senderId", miUid);
             json.put("hora", hora);
 
-            // PUBLICAMOS EN MQTT
+            // Publicamos al servidor
             MqttManager.getInstance().publicar(TOPIC_CHAT, json.toString());
 
-            // Limpiamos la caja de texto
+            // NO agregamos a la lista aquí manualmente.
+            // Como estamos suscritos al mismo canal, el mensaje "dará la vuelta"
+            // y entrará por 'onMensajeRecibido', apareciendo automáticamente.
+
             etMensaje.setText("");
 
         } catch (Exception e) {
@@ -134,23 +136,26 @@ public class ChatFragment extends Fragment {
     }
 
     private void procesarMensajeRecibido(String jsonString) {
+        android.util.Log.d("ChatDebug", "JSON Recibido: " + jsonString);
         try {
-            // Convertimos el texto recibido de nuevo a objeto
             JSONObject json = new JSONObject(jsonString);
-
             String contenido = json.getString("contenido");
             String sender = json.getString("senderId");
             String hora = json.getString("hora");
 
             Mensaje nuevoMensaje = new Mensaje(contenido, sender, hora);
 
-            // Agregamos a la lista y actualizamos
             listaMensajes.add(nuevoMensaje);
+            android.util.Log.d("ChatDebug", "Mensaje agregado. Tamaño lista: " + listaMensajes.size());
+
+
             adapter.notifyItemInserted(listaMensajes.size() - 1);
+
             rvMensajes.smoothScrollToPosition(listaMensajes.size() - 1);
 
         } catch (Exception e) {
             e.printStackTrace();
+            android.util.Log.e("ChatDebug", "Error procesando mensaje", e);
         }
     }
 }
