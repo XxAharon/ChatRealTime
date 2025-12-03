@@ -9,7 +9,6 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import info.mqtt.android.service.Ack;
-
 import info.mqtt.android.service.MqttAndroidClient;
 
 public class MqttManager {
@@ -33,13 +32,20 @@ public class MqttManager {
         return instance;
     }
 
+    // Sobrecarga para mantener compatibilidad si se usa en otro lado
     public void conectar(Context context) {
+        conectar(context, null);
+    }
+
+    // NUEVO MÉTODO CON CALLBACK: Avisa cuando ya está conectado
+    public void conectar(Context context, Runnable onConnected) {
+        // 1. Si ya estamos conectados, ejecutamos el callback inmediatamente
         if (client != null && client.isConnected()) {
+            if (onConnected != null) onConnected.run();
             return;
         }
 
         String clientId = org.eclipse.paho.client.mqttv3.MqttClient.generateClientId();
-
         client = new MqttAndroidClient(context.getApplicationContext(), SERVER_URI, clientId, Ack.AUTO_ACK);
 
         try {
@@ -48,6 +54,8 @@ public class MqttManager {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.d(TAG, "¡Conectado a MQTT exitosamente!");
+                    // 2. Avisamos que ya se conectó para poder suscribirnos
+                    if (onConnected != null) onConnected.run();
                 }
 
                 @Override
@@ -88,6 +96,8 @@ public class MqttManager {
             if (client != null && client.isConnected()) {
                 client.subscribe(topic, 1);
                 Log.d(TAG, "Suscrito al tema: " + topic);
+            } else {
+                Log.e(TAG, "Error: Intentando suscribirse sin estar conectado");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error al suscribirse", e);

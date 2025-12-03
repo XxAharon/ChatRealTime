@@ -34,14 +34,12 @@ public class ChatFragment extends Fragment {
     private RecyclerView rvMensajes;
     private EditText etMensaje;
     private ImageButton btnEnviar;
-    private TextView tvTituloChat;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes;
 
     private String miUid;
     private String uidDestino;
-    private String nombreDestino;
     private String TOPIC_CHAT;
 
     @Override
@@ -57,13 +55,13 @@ public class ChatFragment extends Fragment {
 
         if (getArguments() != null) {
             uidDestino = getArguments().getString("uid_destino");
-            nombreDestino = getArguments().getString("nombre_destino");
         }
 
         miUid = FirebaseManager.getInstance().getCurrentUser().getUid();
+
+        // CORRECCIÓN: Inicializamos el adapter con la lista correcta
         adapter = new MensajeAdapter(listaMensajes, miUid);
 
-        // Generamos el canal único
         if (miUid.compareTo(uidDestino) < 0) {
             TOPIC_CHAT = "chat/" + miUid + "_" + uidDestino;
         } else {
@@ -73,12 +71,14 @@ public class ChatFragment extends Fragment {
         rvMensajes = view.findViewById(R.id.recycleViewChat);
         etMensaje = view.findViewById(R.id.etMensaje);
         btnEnviar = view.findViewById(R.id.btnEnviar);
+
         rvMensajes.setAdapter(adapter);
 
         LinearLayoutManager lm = new LinearLayoutManager(getContext());
-        lm.setStackFromEnd(true); // Los mensajes nuevos aparecen abajo
+        lm.setStackFromEnd(true);
         rvMensajes.setLayoutManager(lm);
 
+        // Llamamos a la configuración MQTT
         configurarMQTT();
 
         btnEnviar.setOnClickListener(v -> enviarMensaje());
@@ -86,26 +86,30 @@ public class ChatFragment extends Fragment {
 
     private void configurarMQTT() {
         MqttManager mqtt = MqttManager.getInstance();
-        mqtt.conectar(requireContext());
 
-        mqtt.suscribirse(TOPIC_CHAT, new MqttManager.MensajeListener() {
-            @Override
-            public void onMensajeRecibido(String mensajeJson) {
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() ->
-                            procesarMensajeRecibido(mensajeJson)
-                    );
-                }
-            }
+        // CORRECCIÓN CLAVE: Pasamos un Runnable que se ejecuta SOLO cuando conecta
+        mqtt.conectar(requireContext(), () -> {
 
-            @Override
-            public void onError(String mensajeError) {
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() ->
-                            Toast.makeText(getContext(), mensajeError, Toast.LENGTH_SHORT).show()
-                    );
+            // Ahora que estamos seguros de estar conectados, nos suscribimos
+            mqtt.suscribirse(TOPIC_CHAT, new MqttManager.MensajeListener() {
+                @Override
+                public void onMensajeRecibido(String mensajeJson) {
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() ->
+                                procesarMensajeRecibido(mensajeJson)
+                        );
+                    }
                 }
-            }
+
+                @Override
+                public void onError(String mensajeError) {
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() ->
+                                Toast.makeText(getContext(), mensajeError, Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                }
+            });
         });
     }
 
@@ -121,12 +125,7 @@ public class ChatFragment extends Fragment {
             json.put("senderId", miUid);
             json.put("hora", hora);
 
-            // Publicamos al servidor
             MqttManager.getInstance().publicar(TOPIC_CHAT, json.toString());
-
-            // NO agregamos a la lista aquí manualmente.
-            // Como estamos suscritos al mismo canal, el mensaje "dará la vuelta"
-            // y entrará por 'onMensajeRecibido', apareciendo automáticamente.
 
             etMensaje.setText("");
 
@@ -136,7 +135,6 @@ public class ChatFragment extends Fragment {
     }
 
     private void procesarMensajeRecibido(String jsonString) {
-        android.util.Log.d("ChatDebug", "JSON Recibido: " + jsonString);
         try {
             JSONObject json = new JSONObject(jsonString);
             String contenido = json.getString("contenido");
@@ -146,16 +144,11 @@ public class ChatFragment extends Fragment {
             Mensaje nuevoMensaje = new Mensaje(contenido, sender, hora);
 
             listaMensajes.add(nuevoMensaje);
-            android.util.Log.d("ChatDebug", "Mensaje agregado. Tamaño lista: " + listaMensajes.size());
-
-
             adapter.notifyItemInserted(listaMensajes.size() - 1);
-
             rvMensajes.smoothScrollToPosition(listaMensajes.size() - 1);
 
         } catch (Exception e) {
             e.printStackTrace();
-            android.util.Log.e("ChatDebug", "Error procesando mensaje", e);
         }
     }
 }

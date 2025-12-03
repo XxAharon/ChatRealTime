@@ -18,6 +18,9 @@ import com.example.chatrealtime.Adapter.ContactosAdapter;
 import com.example.chatrealtime.Model.Usuario;
 import com.example.chatrealtime.Network.FirebaseManager;
 import com.example.chatrealtime.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -109,11 +112,28 @@ public class ListaContactosFragment extends Fragment {
 
     private void cargarListener() {
         btnCerrarSesion.setOnClickListener(v -> {
-            FirebaseManager.getInstance().singout();
-            if(FirebaseManager.getInstance().getCurrentUser() == null) {
-                navegacionLogin();
-                Toast.makeText(getContext(), "Sesión cerrada", Toast.LENGTH_SHORT).show();
-            }
+
+            // 1. Configuramos Google Sign In (Igual que en el LoginFragment)
+            // Necesitamos esto para tener acceso al cliente que controla la sesión de Google
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+
+            GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
+
+            // 2. Cerramos la sesión de GOOGLE primero
+            googleSignInClient.signOut().addOnCompleteListener(task -> {
+
+                // 3. Una vez cerrado Google, cerramos la sesión de FIREBASE
+                FirebaseManager.getInstance().singout();
+
+                // 4. Verificamos y nos vamos
+                if(FirebaseManager.getInstance().getCurrentUser() == null) {
+                    navegacionLogin();
+                    Toast.makeText(getContext(), "Sesión cerrada correctamente", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
