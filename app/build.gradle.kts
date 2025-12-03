@@ -41,6 +41,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     // Dependencia de Auth
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth")
 
     implementation(libs.appcompat)
     implementation(libs.material)

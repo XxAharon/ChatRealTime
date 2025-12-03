@@ -29,13 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
         textInicial = findViewById(R.id.textViewInicial);
 
-        entrada();
+        vienvenida();
     }
 
-    private void entrada() {
+    private void vienvenida() {
         textInicial.animate()
+                .setStartDelay(800)
                 .translationX(500f)
-                .setDuration(1500)
+                .setDuration(2000)
                 .withEndAction(() -> {
                     textInicial.setText("");
                     Toast.makeText(this, "Bienvenido", Toast.LENGTH_SHORT).show();
