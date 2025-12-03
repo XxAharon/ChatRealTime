@@ -39,8 +39,15 @@ public class MainActivity extends AppCompatActivity {
                 .setDuration(2000)
                 .withEndAction(() -> {
                     textInicial.setText("");
-                    Toast.makeText(this, "Bienvenido", Toast.LENGTH_SHORT).show();
+                    navegarAlChat();
                 })
                 .start();
+    }
+
+    private void navegarAlChat() {
+        LoginFragment loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main, loginFragment)
+                .commit();
     }
 }
