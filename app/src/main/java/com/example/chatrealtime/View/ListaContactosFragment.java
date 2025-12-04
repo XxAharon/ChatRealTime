@@ -71,7 +71,7 @@ public class ListaContactosFragment extends Fragment {
                 for (DataSnapshot data : snapshot.getChildren()) {
                     Usuario user = data.getValue(Usuario.class);
 
-                    if (user != null && user.getUid() != null) {
+                    if (user != null && user.getUid() != null && !user.getUid().equals(miUid)) {
                         usuarios.add(user);
                     }
                 }

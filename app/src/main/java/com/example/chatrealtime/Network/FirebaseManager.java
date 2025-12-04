@@ -23,6 +23,11 @@ public class FirebaseManager {
         return instance;
     }
 
+    private FirebaseManager() {
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        auth = FirebaseAuth.getInstance();
+    }
+
     public interface AuthCallback {
         void onAuthSuccess();
         void onAuthError(String errorMessage);
@@ -33,19 +38,14 @@ public class FirebaseManager {
 
         auth.signInWithCredential(credential)
                 .addOnCompleteListener(task -> {
-                   if(task.isSuccessful()) {
-                       guardarUsuarioEnBaseDeDatos(() -> {
-                           callback.onAuthSuccess();
-                       });
-                   } else {
-                       callback.onAuthError(task.getException().getMessage());
-                   }
+                    if (task.isSuccessful()) {
+                        guardarUsuarioEnBaseDeDatos(() -> {
+                            callback.onAuthSuccess();
+                        });
+                    } else {
+                        callback.onAuthError(task.getException().getMessage());
+                    }
                 });
-    }
-
-    private FirebaseManager() {
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-        auth = FirebaseAuth.getInstance();
     }
 
     public FirebaseUser getCurrentUser() {

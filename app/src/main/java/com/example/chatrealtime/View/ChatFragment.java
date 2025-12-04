@@ -40,7 +40,7 @@ public class ChatFragment extends Fragment {
 
     private String miUid;
     private String uidDestino;
-    private String TOPIC_CHAT;
+    private String TOPIC_CHAT = "chat/Usuarios";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,11 +62,6 @@ public class ChatFragment extends Fragment {
         // CORRECCIÓN: Inicializamos el adapter con la lista correcta
         adapter = new MensajeAdapter(listaMensajes, miUid);
 
-        if (miUid.compareTo(uidDestino) < 0) {
-            TOPIC_CHAT = "chat/" + miUid + "_" + uidDestino;
-        } else {
-            TOPIC_CHAT = "chat/" + uidDestino + "_" + miUid;
-        }
 
         rvMensajes = view.findViewById(R.id.recycleViewChat);
         etMensaje = view.findViewById(R.id.etMensaje);
@@ -89,6 +84,7 @@ public class ChatFragment extends Fragment {
 
         // CORRECCIÓN CLAVE: Pasamos un Runnable que se ejecuta SOLO cuando conecta
         mqtt.conectar(requireContext(), () -> {
+
 
             // Ahora que estamos seguros de estar conectados, nos suscribimos
             mqtt.suscribirse(TOPIC_CHAT, new MqttManager.MensajeListener() {

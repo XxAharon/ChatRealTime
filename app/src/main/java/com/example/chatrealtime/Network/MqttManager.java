@@ -32,14 +32,11 @@ public class MqttManager {
         return instance;
     }
 
-    // Sobrecarga para mantener compatibilidad si se usa en otro lado
     public void conectar(Context context) {
         conectar(context, null);
     }
 
-    // NUEVO MÉTODO CON CALLBACK: Avisa cuando ya está conectado
     public void conectar(Context context, Runnable onConnected) {
-        // 1. Si ya estamos conectados, ejecutamos el callback inmediatamente
         if (client != null && client.isConnected()) {
             if (onConnected != null) onConnected.run();
             return;
